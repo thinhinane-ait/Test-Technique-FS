@@ -1,9 +1,12 @@
-from sqlalchemy import String, DateTime, Enum,ForeignKey, Text,Enum, func
+from sqlalchemy import String, DateTime, Enum,ForeignKey, Text,Enum,func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
 from datetime import datetime
 import enum
-from app.models.antenna import Antenna
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+  from app.models.antenna import Antenna
 
 class InterventionPriority(str, enum.Enum):
     LOW = "LOW"
@@ -16,7 +19,7 @@ class Intervention(Base):
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
-        index=True
+
     )
     
     antenna_id: Mapped[int] = mapped_column(

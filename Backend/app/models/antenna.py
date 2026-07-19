@@ -3,7 +3,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
 from datetime import datetime
 import enum
-from app.models.intervention import Intervention
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING: 
+    from app.models.intervention import Intervention
 
 
 class AntennaStatus(str, enum.Enum):
@@ -16,7 +19,7 @@ class Antenna(Base):
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
-        index=True
+
     )
 
     name: Mapped[str] = mapped_column(
