@@ -13,3 +13,23 @@ class InterventionSummary(BaseModel):
     ended_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True,extra="forbid")
+
+
+
+class InterventionBase(BaseModel):
+    antenna_id: int
+    description: str
+    technician_identity: str
+    priority: InterventionPriority
+
+
+class InterventionResponse(InterventionBase):
+    id: int
+    created_at: datetime
+    ended_at: datetime | None = None
+    model_config = ConfigDict(from_attributes=True,extra="forbid") 
+
+     
+
+
+
