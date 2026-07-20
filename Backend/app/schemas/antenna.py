@@ -16,5 +16,5 @@ class AntennaResponse(AntennaBase):
     created_at: datetime
     latest_intervention: InterventionSummary | None = None
 
-
-    model_config = ConfigDict(from_attributes=True) 
+    
+    model_config = ConfigDict(from_attributes=True,extra="forbid") 
