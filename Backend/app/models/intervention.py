@@ -1,3 +1,5 @@
+#app/models/intervention.py
+from __future__ import annotations
 from sqlalchemy import String, DateTime, Enum,ForeignKey, Text,Enum,func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
