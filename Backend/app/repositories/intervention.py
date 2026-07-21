@@ -7,6 +7,7 @@ from app.repositories.antenna import AntennaRepository
 from sqlalchemy import select
 from datetime import datetime
 from fastapi import HTTPException
+from sqlalchemy import func
 
 class InterventionRepository():
 
@@ -59,9 +60,27 @@ class InterventionRepository():
                 Intervention.ended_at.is_(None)
           )
           return db.scalar(statement)
+    
+    
+    def close_intervention(
+                self,
+                db: Session,
+                intervention_id: int
+    )-> Intervention :
+        intervention = db.scalar(
+                select(Intervention).where(
+                    Intervention.id == intervention_id
+                )
+        )    
+        if intervention is None:
+           return None
+        
+        intervention.ended_at = func.now()
 
+        return intervention
 
-
+        
+     
 
         
         

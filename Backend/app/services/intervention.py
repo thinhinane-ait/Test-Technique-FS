@@ -35,6 +35,7 @@ class InterventionService:
             db,
             intervention.antenna_id
         )
+
         ### vérifier si `ended_at` IS NULL
         if active_intervention: 
              raise HTTPException(
@@ -55,6 +56,57 @@ class InterventionService:
         db.commit()
         db.refresh(new_intervention)
         return new_intervention
+
+    
+    def close_intervention(
+            self,
+            db: Session,
+            antenna_id: int
+    )-> Intervention:
+        
+        ##get antenna 
+        antenna = self.antennaRepository.get_antenna_by_id(
+            db,
+            antenna_id,
+        )
+        if antenna is None: 
+
+             raise HTTPException(
+                    status_code=404,
+                    detail="L'antenne n'existe pas"
+                )
+        ### Verfier l'activité de l'intervention
+
+        getIntervention = self.repository.get_active_intervention_by_antenne_id(
+            db,
+            antenna_id
+        )
+
+        if getIntervention is None:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Aucune intervention en cours"
+            )
+        
+        closed_intervention = self.repository.close_intervention(
+            db,
+            getIntervention.id
+        )
+        
+        self.antennaRepository.update_status_antenna_id(
+                db,
+                antenna,
+                AntennaStatus.UP,
+            )
+        
+        db.commit()
+        db.refresh(closed_intervention)
+
+        return closed_intervention
+        
+
+
 
 
 

@@ -38,3 +38,18 @@ def create_intervention(
         db,
         intervention
     )
+
+
+
+@router.patch("/intervention/{intervention_id}/close",
+              response_model=InterventionResponse,
+    summary="Close intervention")
+
+def close_intervention(
+    intervention_id : int,
+    db:DBSession
+): 
+    return service.close_intervention(
+        db,
+        intervention_id
+    )
