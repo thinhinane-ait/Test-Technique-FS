@@ -1,6 +1,6 @@
 #app/models/intervention.py
 from __future__ import annotations
-from sqlalchemy import String, DateTime, Enum,ForeignKey, Text,Enum,func
+from sqlalchemy import String, DateTime, Enum,ForeignKey, Text,func, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
 from datetime import datetime
@@ -17,7 +17,18 @@ class InterventionPriority(str, enum.Enum):
 
 
 class Intervention(Base):
+
     __tablename__="intervention"
+
+    __table_args__ = (
+        Index(
+            "unique_active_intervention",
+            "antenna_id",
+            unique=True,
+            postgresql_where="ended_at IS NULL",
+        ),
+    )
+
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
@@ -27,7 +38,7 @@ class Intervention(Base):
     antenna_id: Mapped[int] = mapped_column(
         ForeignKey("antenna.id", ondelete="CASCADE"),
         nullable=False,
-        index=True, 
+        index=True,
         )
     
     description: Mapped[str] = mapped_column(
@@ -57,8 +68,8 @@ class Intervention(Base):
         nullable=True,
     )
 
-    antenna: Mapped[Antenna] = relationship(
-        back_populates='interventions'
+    antenna: Mapped["Antenna"] = relationship(
+        back_populates="interventions"
     )
 
 

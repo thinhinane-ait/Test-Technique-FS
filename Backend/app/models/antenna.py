@@ -1,6 +1,6 @@
 #app/models/antenna.py
 from __future__ import annotations
-from sqlalchemy import String, DateTime, Enum, func
+from sqlalchemy import String, DateTime, Enum, func, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
 from datetime import datetime
@@ -47,10 +47,11 @@ class Antenna(Base):
         server_default=func.now(),
     )
 
-    interventions: Mapped[list[Intervention]] = relationship(
+    interventions: Mapped[list["Intervention"]] = relationship(
         back_populates="antenna",
         cascade="all, delete-orphan",
         passive_deletes=True,
+        lazy="selectin"
     )
 
 
