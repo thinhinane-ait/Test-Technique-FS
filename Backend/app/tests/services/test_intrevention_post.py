@@ -8,7 +8,6 @@ from app.models.intervention import Intervention
 
 
 client = TestClient(app)
-
 @pytest.fixture(autouse=True)
 def clean_interventions():
     db = SessionLocal()
@@ -23,7 +22,7 @@ def clean_interventions():
     yield
 
     db.close()
-
+    
 API_KEY = settings.secret_key
 
 header = {

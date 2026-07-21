@@ -61,19 +61,23 @@ class InterventionRepository():
           )
           return db.scalar(statement)
     
+    def get_intervention_by_id(
+              self,
+              db: Session,
+              intervention_id: int
+
+    )-> Intervention: 
+        statement = select(Intervention).where(
+                Intervention.id == intervention_id,
+          )
+        return db.scalar(statement)
     
     def close_intervention(
                 self,
                 db: Session,
-                intervention_id: int
+                intervention: Intervention
     )-> Intervention :
-        intervention = db.scalar(
-                select(Intervention).where(
-                    Intervention.id == intervention_id
-                )
-        )    
-        if intervention is None:
-           return None
+        
         
         intervention.ended_at = func.now()
 
