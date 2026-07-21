@@ -33,7 +33,7 @@ class InterventionService:
         
         active_intervention = self.repository.get_active_intervention_by_antenne_id(
             db,
-            [intervention.antenna_id]
+            intervention.antenna_id
         )
         ### vérifier si `ended_at` IS NULL
         if active_intervention: 
