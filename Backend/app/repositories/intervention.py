@@ -48,6 +48,17 @@ class InterventionRepository():
                 )
                 db.add(db_intervention)
                 return db_intervention
+    
+    def get_active_intervention_by_antenne_id(
+                self,
+                db:Session,
+                antenna_id: int
+    )-> Intervention: 
+          statement = select(Intervention).where(
+                Intervention.antenna_id == antenna_id,
+                Intervention.ended_at.is_(None)
+          )
+          return db.scalar(statement)
 
 
 

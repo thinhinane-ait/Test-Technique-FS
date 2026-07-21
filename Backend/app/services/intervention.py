@@ -31,15 +31,15 @@ class InterventionService:
                 )
         ### get last intervention pour antenne specifique
         
-        last_intervention = self.repository.get_last_intervention_by_antenna_ids(
+        active_intervention = self.repository.get_active_intervention_by_antenne_id(
             db,
             [intervention.antenna_id]
         )
         ### vérifier si `ended_at` IS NULL
-        if last_intervention and last_intervention[0].ended_at is None: 
+        if active_intervention: 
              raise HTTPException(
                     status_code=409,
-                    detail="Une intervention est déja en cours"
+                    detail=f"Une intervention est déja en cours pour cette {intervention.antenna_id}"
                 )
         
         ### Creer une nouvelle intervention pour l'antenne 
