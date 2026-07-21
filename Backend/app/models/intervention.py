@@ -58,7 +58,7 @@ class Intervention(Base):
     )
 
     antenna: Mapped[Antenna] = relationship(
-        back_populates='intervention'
+        back_populates='interventions'
     )
 
 

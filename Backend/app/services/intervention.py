@@ -1,0 +1,61 @@
+#app/services/intervention.py
+from app.repositories.intervention import InterventionRepository
+from sqlalchemy.orm import Session
+from app.schemas.intervention import InterventionCreate
+from app.models.intervention import Intervention
+from app.models.antenna import AntennaStatus
+from app.repositories.antenna import AntennaRepository
+from fastapi import HTTPException
+
+class InterventionService:
+
+    def __init__(self):
+        self.repository = InterventionRepository()
+        self.antennaRepository = AntennaRepository()
+
+    def create_intervention(
+            self,
+            db: Session,
+            intervention: InterventionCreate,
+    )-> Intervention:
+        ##get antenna 
+        antenna = self.antennaRepository.get_antenna_by_id(
+            db,
+            intervention.antenna_id,
+        )
+        if antenna is None: 
+
+             raise HTTPException(
+                    status_code=404,
+                    detail="L'antenne n'existe pas"
+                )
+        ### get last intervention pour antenne specifique
+        
+        last_intervention = self.repository.get_last_intervention_by_antenna_ids(
+            db,
+            [intervention.antenna_id]
+        )
+        ### vérifier si `ended_at` IS NULL
+        if last_intervention and last_intervention[0].ended_at is None: 
+             raise HTTPException(
+                    status_code=409,
+                    detail="Une intervention est déja en cours"
+                )
+        
+        ### Creer une nouvelle intervention pour l'antenne 
+        new_intervention = self.repository.create_new_intervention(
+            db,
+            intervention
+        )
+        self.antennaRepository.update_status_antenna_id(
+                db,
+                antenna,
+                AntennaStatus.DOWN,
+            )
+        db.commit()
+        db.refresh(new_intervention)
+        return new_intervention
+
+
+
+        

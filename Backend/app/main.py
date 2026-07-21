@@ -1,7 +1,7 @@
 #backend/app/main.py
 from fastapi import FastAPI
 from app.core.config import settings
-from app.api.v1 import antenna
+from app.api.v1 import antenna, intervention
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -16,3 +16,4 @@ def root():
     }
 
 app.include_router(antenna.router)
+app.include_router(intervention.router)
