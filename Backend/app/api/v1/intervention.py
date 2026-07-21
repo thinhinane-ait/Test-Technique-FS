@@ -4,14 +4,13 @@ from app.database.session import SessionLocal
 from app.services.intervention import InterventionService
 from app.schemas.intervention import InterventionResponse, InterventionCreate
 from typing import Annotated
-
-
-
+from app.core.security import verify_api_key
 
 
 router = APIRouter(
     prefix = "/api/v1",
     tags=["interventions"],
+    dependencies=[Depends(verify_api_key)],
 )
 
 def get_db():
