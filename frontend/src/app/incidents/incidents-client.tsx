@@ -110,6 +110,7 @@ export default function IncidentsClient() {
       setCommentsLoading(true);
       fetchComments(selectedIncident.id)
         .then((res: any) => {
+          console.log("Commentaires reçus :", res);
           setComments(res.data || []);
           setCommentsLoading(false);
         })
