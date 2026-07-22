@@ -48,9 +48,13 @@ async function fetchIncidents(status?: string, siteCode?: string, page = 1) {
   if (status && status !== 'all') params.set('status', status);
   if (siteCode) params.set('siteCode', siteCode);
 
-  const res = await fetch(`/api/incidents?${params}`);
+  const res = await fetch(`/api/incidents?${params}`, {
+    cache: 'no-store'
+  });
+
   return res.json();
 }
+
 
 async function fetchIncidentDetail(id: number) {
   const res = await fetch(`/api/incidents/${id}`);
@@ -89,9 +93,13 @@ export default function IncidentsClient() {
   const [modalOpen, setModalOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
 
+  /**
+ * Rafraîchissement automatique de la liste,  refetchInterval:10000,
+ */
   const { data: listData, isLoading, isError } = useQuery({
     queryKey: ['incidents', statusFilter, searchQuery, page],
     queryFn: () => fetchIncidents(statusFilter, searchQuery, page),
+    staleTime: 0,
   });
 
   const [comments, setComments] = useState<Comment[]>([]);
