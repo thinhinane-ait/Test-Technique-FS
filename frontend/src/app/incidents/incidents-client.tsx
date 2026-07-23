@@ -74,7 +74,7 @@ async function updateIncidentStatus(id: number, status: string) {
 
 async function fetchComments(id: number, page=1, limit=10) {
   const res = await fetch(`/api/incidents/${id}/comments?page=${page}&limit=${limit}`);
-  console.log("res :",res);
+
   return res.json();
 }
 
@@ -95,31 +95,43 @@ export default function IncidentsClient() {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
-
+  const [userActionLoading, setUserActionLoading] = useState(false);
   /**
  * Rafraîchissement automatique de la liste,  refetchInterval:10000,
  */
-  const { data: listData, isLoading, isError } = useQuery({
+  const { data: listData, isLoading, isError,isFetching } = useQuery({
     queryKey: ['incidents', statusFilter, searchQuery, page],
     queryFn: () => fetchIncidents(statusFilter, searchQuery, page),
+    refetchInterval: 10000,
     staleTime: 0,
   });
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
-
+  // Les actions utilisateur (filtre, pagination) doivent afficher un loading normal
+  const [commentPage, setCommentPage,] = useState(1)
+  const commentLimit =5;
+  const commentTotalPages = Math.ceil(
+  (selectedIncident?.commentCount ?? 0) / commentLimit
+);
   useEffect(() => {
     if (selectedIncident) {
       setCommentsLoading(true);
-      fetchComments(selectedIncident.id)
+      fetchComments(selectedIncident.id ,commentPage, commentLimit)
         .then((res: any) => {
-          console.log("Commentaires reçus :", res.data);
           setComments(res.data || []);
           setCommentsLoading(false);
         })
         .catch(() => setCommentsLoading(false));
     }
-  }, [selectedIncident?.id]);
+  }, [selectedIncident?.id, commentPage]);
+
+   useEffect(() => {
+    if (!isFetching) {
+      setUserActionLoading(false);
+    }
+  }, [isFetching]);
+
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) =>
@@ -134,19 +146,17 @@ export default function IncidentsClient() {
       postComment(id, 'candidate@company.com', message),
     onSuccess: () => {
       setNewComment('');
-      // console.log("Commentaire ajouté avec succés");
       toast.success("Commentaire ajouté avec succés")
+      setCommentPage(commentTotalPages);
       if (selectedIncident) {
         setCommentsLoading(true);
-        fetchComments(selectedIncident.id).then((res: any) => {
+        fetchComments(selectedIncident.id,commentPage,commentLimit).then((res: any) => {
           setComments(res.data || []);
           setCommentsLoading(false);
         });
       }
     },
     onError:(error:Error) => {
-      // console.log(error.message);
-      
       toast.error(
         error.message || "Impossible d'ajouter le commentaire"
       )
@@ -176,7 +186,7 @@ export default function IncidentsClient() {
       <h1 className="text-2xl font-bold">Incidents</h1>
 
       <div className="flex gap-3 items-center">
-        <Select value={statusFilter} onValueChange={(v) => { if (v) { setStatusFilter(v); setPage(1); } }}>
+        <Select value={statusFilter} onValueChange={(v) => { if (v) {setUserActionLoading(true); setStatusFilter(v); setPage(1); } }}>
           <SelectTrigger className="w-44">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -193,13 +203,13 @@ export default function IncidentsClient() {
           <Input
             placeholder="Search site code..."
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+            onChange={(e) => {setUserActionLoading(true); setSearchQuery(e.target.value); setPage(1); }}
             className="pl-9"
           />
         </div>
       </div>
 
-      {isLoading && (
+      {(isLoading || userActionLoading) && (
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
             <Skeleton key={i} className="h-16 w-full rounded-lg" />
@@ -214,7 +224,7 @@ export default function IncidentsClient() {
         </div>
       )}
 
-      {!isLoading && !isError && (
+      {!isLoading && !userActionLoading && !isError &&  (
         <div className="space-y-2">
           {incidents.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">No incidents found.</p>
@@ -249,8 +259,8 @@ export default function IncidentsClient() {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={page === 1}
-                onClick={() => setPage(p => p - 1)}
+                disabled={page === 1 || userActionLoading}
+                onClick={() => {setUserActionLoading(true); setPage(p => p - 1)}}
               >
                 Previous
               </Button>
@@ -260,8 +270,8 @@ export default function IncidentsClient() {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={page >= Math.ceil(total / 10)}
-                onClick={() => setPage(p => p + 1)}
+                disabled={page >= Math.ceil(total / 10)  || userActionLoading}
+                onClick={() => {setUserActionLoading(true);setPage(p => p + 1)}}
               >
                 Next
               </Button>
@@ -338,6 +348,7 @@ export default function IncidentsClient() {
                   ) : comments.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No comments yet.</p>
                   ) : (
+                     <>
                     <div className="space-y-3 mb-4">
                       {comments.map((comment) => (
                         <div key={comment.id} className="rounded-md border p-3 space-y-1">
@@ -351,7 +362,37 @@ export default function IncidentsClient() {
                         </div>
                       ))}
                     </div>
-                  )}
+                     {/* Pagination */}
+                     {commentTotalPages > 1 && (
+                        <div className="flex justify-center gap-2 mb-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={commentPage === 1 || commentsLoading}
+                            onClick={() => setCommentPage((page) => page - 1)}
+                          >
+                            Previous
+                          </Button>
+
+                          <span className="flex items-center text-sm text-muted-foreground">
+                            Page {commentPage} / {commentTotalPages}
+                          </span>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={commentPage >= commentTotalPages || commentsLoading}
+                            onClick={() => setCommentPage((page) => page + 1)}
+                          >
+                            Next
+                          </Button>
+                        </div>
+                      )}
+                     </>
+                     )}
+                     
+                        
+
 
                   <div className="space-y-2 pt-2">
                     <Textarea
