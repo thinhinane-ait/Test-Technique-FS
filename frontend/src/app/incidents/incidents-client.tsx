@@ -134,7 +134,7 @@ export default function IncidentsClient() {
       postComment(id, 'candidate@company.com', message),
     onSuccess: () => {
       setNewComment('');
-      console.log("Commentaire ajouté avec succés");
+      // console.log("Commentaire ajouté avec succés");
       toast.success("Commentaire ajouté avec succés")
       if (selectedIncident) {
         setCommentsLoading(true);
@@ -145,7 +145,7 @@ export default function IncidentsClient() {
       }
     },
     onError:(error:Error) => {
-      console.log(error.message);
+      // console.log(error.message);
       
       toast.error(
         error.message || "Impossible d'ajouter le commentaire"
