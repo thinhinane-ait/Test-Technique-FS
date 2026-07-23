@@ -22,6 +22,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { AlertTriangle, MessageSquare, Search, Loader2 } from 'lucide-react';
+import { error } from 'console';
+import { toast } from 'sonner';
 
 type Incident = {
   id: number;
@@ -70,8 +72,9 @@ async function updateIncidentStatus(id: number, status: string) {
   return res.json();
 }
 
-async function fetchComments(id: number) {
-  const res = await fetch(`http://localhost:4000/v1/incidents/${id}/comments`);
+async function fetchComments(id: number, page=1, limit=10) {
+  const res = await fetch(`/api/incidents/${id}/comments?page=${page}&limit=${limit}`);
+  console.log("res :",res);
   return res.json();
 }
 
@@ -110,7 +113,7 @@ export default function IncidentsClient() {
       setCommentsLoading(true);
       fetchComments(selectedIncident.id)
         .then((res: any) => {
-          console.log("Commentaires reçus :", res);
+          console.log("Commentaires reçus :", res.data);
           setComments(res.data || []);
           setCommentsLoading(false);
         })
@@ -131,6 +134,8 @@ export default function IncidentsClient() {
       postComment(id, 'candidate@company.com', message),
     onSuccess: () => {
       setNewComment('');
+      console.log("Commentaire ajouté avec succés");
+      toast.success("Commentaire ajouté avec succés")
       if (selectedIncident) {
         setCommentsLoading(true);
         fetchComments(selectedIncident.id).then((res: any) => {
@@ -139,6 +144,14 @@ export default function IncidentsClient() {
         });
       }
     },
+    onError:(error:Error) => {
+      console.log(error.message);
+      
+      toast.error(
+        error.message || "Impossible d'ajouter le commentaire"
+      )
+    }
+    
   });
 
   const handleOpenDetail = (incident: Incident) => {
