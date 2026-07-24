@@ -7,7 +7,7 @@ client = TestClient(app)
 
 
 def test_get_antennas(antenna_id):
-    response = client.get("/v1/antenna")
+    response = client.get("/api/v1/antennas")
 
     assert response.status_code == 200
 
@@ -22,7 +22,7 @@ def test_get_antennas(antenna_id):
 
 def test_get_antennas_with_filters(antenna_id):
     response = client.get(
-        "/v1/antenna",
+        "/api/v1/antennas",
         params={
             "city": "Paris",
             "status": "UP",

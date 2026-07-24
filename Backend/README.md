@@ -48,13 +48,7 @@ source env/bin/activate
 Sous Windows avec PowerShell :
 
 ```powershell
-env\Scripts\Activate.ps1
-```
-
-Sous Windows avec l’invite de commandes :
-
-```cmd
-env\Scripts\activate.bat
+env\Scripts\Activate
 ```
 
 Installer les dépendances :
@@ -68,19 +62,26 @@ pip install -r requirements.txt
 Créer un fichier `.env` à la racine du projet :
 
 ```env
-POSTGRES_USER=your_postgres_user
-POSTGRES_PASSWORD=your_postgres_password
-POSTGRES_DB=your_database_name
+DATABASE_URL=database_url
 API_KEY=your_api_key
 ```
 
-Adapter le nom `API_KEY` au nom réellement utilisé dans la configuration de l’application.
+Adapter le nom `API_KEY` et `DATABASE_URL` au noms réellement utilisés dans la configuration de l’application.
 
 Le fichier `.env` contient des informations sensibles et ne doit pas être envoyé sur Git.
 
 ## Base de données PostgreSQL
 
 Le fichier `docker-compose.yml` se trouve à la racine du projet.
+
+Créer un fichier `.env` à la racine du projet :
+
+```env
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_DB=your_database_name
+```
+
 
 Depuis la racine, lancer PostgreSQL :
 
@@ -166,12 +167,12 @@ X-API-Key: your_api_key
 
 La valeur réelle de la clé doit être définie dans le fichier `.env` et ne doit pas être publiée sur Git.
 
-## Antennes
+## Antennas
 
 ### Récupérer les antennes
 
 ```http
-GET /v1/antenna
+GET /api/v1/antennas
 ```
 
 Retourne la liste des antennes avec leur dernière intervention, lorsqu’elle existe.
@@ -194,7 +195,7 @@ GET /v1/antenna?city=Paris&limit=10&offset=0
 Avec `curl` :
 
 ```bash
-curl "http://127.0.0.1:8000/v1/antenna?city=Paris&limit=10&offset=0"
+curl "http://127.0.0.1:8000/api/v1/antennas?city=Paris&limit=10&offset=0"
 ```
 
 ### Réponse réussie
@@ -268,10 +269,9 @@ Code HTTP : `200 OK`
 
 | Code | Description |
 |---|---|
-| `401` ou `403` | Clé API absente ou invalide |
+| `401` ou `403` | Clé d'autorisation est invalide |
 | `404` | L’antenne n’existe pas |
-| `409` | Une intervention est déjà active pour cette antenne |
-| `422` | Les données envoyées sont invalides |
+| `409` | Une intervention est déjà en cours |
 
 ### Clôturer une intervention
 
@@ -286,7 +286,7 @@ Cette route nécessite une clé API.
 ### Exemple
 
 ```http
-PATCH /api/v1/interventions/1/close
+PATCH /api/v1/interventions/{intervention_id}/close
 ```
 
 ### Réponse réussie
@@ -309,20 +309,40 @@ Code HTTP : `200 OK`
 
 | Code | Description |
 |---|---|
-| `401` ou `403` | Clé API absente ou invalide |
-| `404` | L’intervention n’existe pas |
+| `401` ou `403` | Clé d'autorisation est invalide |
+| `404` | Aucune intervention en cours |
 | `409` | L’intervention est déjà clôturée |
 
 ## Tests
 
-Depuis le dossier `Backend`, avec l’environnement virtuel activé :
+## Lancement des tests
 
-```bash
-pytest
-```
+Placez-vous dans le dossier du backend :
 
-Pour afficher plus de détails :
+Lancez tous les tests :
 
 ```bash
 pytest -v
+```
+
+Pour afficher un résultat plus court :
+
+```bash
+pytest -q
+```
+
+Les tests vérifient notamment :
+
+- la validation des données d’une antenne ;
+- la récupération de la liste des antennes ;
+- le filtrage des antennes par ville et par statut ;
+- la création d’une intervention ;
+- l’interdiction de créer deux interventions actives pour une même antenne ;
+- le refus d’une requête sans clé API ;
+- la clôture d’une intervention.
+
+Résultat attendu :
+
+```text
+10 passed
 ```
