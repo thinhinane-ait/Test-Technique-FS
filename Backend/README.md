@@ -4,10 +4,10 @@ API de gestion des antennes et des interventions, développée avec FastAPI et c
 
 ## Technologies
 
-- Python
-- FastAPI
+- Langage : Python 3.11+ 
+- Framework : FastAPI
 - SQLAlchemy
-- PostgreSQL
+- Base de donnée: PostgreSQL
 - Psycopg
 - Alembic
 - Pydantic
