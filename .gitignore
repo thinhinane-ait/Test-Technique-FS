@@ -1,5 +1,22 @@
+# Variables d’environnement
 .env
-backend/.env
-backend/env
-backend/.pytest_cache/
+**/.env
+*.env
+!.env.example
+!**/.env.example
+
+# Environnements virtuels Python
+Backend/env/
+env/
+
+# Fichiers Python générés
+__pycache__/
 **/__pycache__/
+*.py[cod]
+
+# Cache des tests
+.pytest_cache/
+**/.pytest_cache/
+
+# Fichiers macOS
+.DS_Store
