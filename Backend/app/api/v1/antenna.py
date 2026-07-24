@@ -1,26 +1,18 @@
 #app/api/v1/antenna.py
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from app.database.session import SessionLocal
 from typing import Annotated
 from app.schemas.antenna import AntennaResponse
 from app.services.antenna import AntennaService
 from app.models.antenna import AntennaStatus
+from app.database.dependencies import get_db
+
 
 router = APIRouter(
     prefix = "/v1/antenna",
     tags=["Antennas"],
 )
 
-
-def get_db():
-    db = SessionLocal()
-
-    try : 
-        yield db
-    
-    finally: 
-        db.close()
 
 service = AntennaService()
 DBSession = Annotated[Session, Depends(get_db)]

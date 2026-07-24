@@ -10,8 +10,8 @@ from fastapi import HTTPException
 class InterventionService:
 
     def __init__(self):
-        self.repository = InterventionRepository()
-        self.antennaRepository = AntennaRepository()
+        self.intervention_repository = InterventionRepository()
+        self.antenna_repository = AntennaRepository()
 
     def create_intervention(
             self,
@@ -19,7 +19,7 @@ class InterventionService:
             intervention: InterventionCreate,
     )-> Intervention:
         ##get antenna 
-        antenna = self.antennaRepository.get_antenna_by_id(
+        antenna = self.antenna_repository.get_antenna_by_id(
             db,
             intervention.antenna_id,
         )
@@ -31,7 +31,7 @@ class InterventionService:
                 )
         ### get last intervention pour antenne specifique
         
-        active_intervention = self.repository.get_active_intervention_by_antenne_id(
+        active_intervention = self.intervention_repository.get_active_intervention_by_antenna_id(
             db,
             intervention.antenna_id
         )
@@ -44,11 +44,11 @@ class InterventionService:
                 )
         
         ### Creer une nouvelle intervention pour l'antenne 
-        new_intervention = self.repository.create_new_intervention(
+        new_intervention = self.intervention_repository.create_new_intervention(
             db,
             intervention
         )
-        self.antennaRepository.update_status_antenna_id(
+        self.antenna_repository.update_status_antenna_id(
                 db,
                 antenna,
                 AntennaStatus.DOWN,
@@ -64,37 +64,36 @@ class InterventionService:
             intervention_id: int
     )-> Intervention:
         
+        ### Véréfier l'existance de l'intervention
 
-        ### Verfier l'existance de l'intervention
-
-        getIntervention = self.repository.get_intervention_by_id(
+        intervention = self.intervention_repository.get_intervention_by_id(
             db,
             intervention_id
         )
 
-        if getIntervention is None:
+        if intervention is None:
 
             raise HTTPException(
                 status_code=404,
                 detail="Aucune intervention en cours"
             )
         
-        if getIntervention.ended_at is not None:
+        if intervention.ended_at is not None:
             raise HTTPException(
                 status_code=409,
                 detail="L'intervention est déjà clôturée"
             )
         
-        closed_intervention = self.repository.close_intervention(
-                getIntervention
+        closed_intervention = self.intervention_repository.close_intervention(
+                intervention
             )
         
-        antenna = self.antennaRepository.get_antenna_by_id(
+        antenna = self.antenna_repository.get_antenna_by_id(
             db,
-            getIntervention.antenna_id
+            intervention.antenna_id
         )
         
-        self.antennaRepository.update_status_antenna_id(
+        self.antenna_repository.update_status_antenna_id(
                 db,
                 antenna,
                 AntennaStatus.UP,

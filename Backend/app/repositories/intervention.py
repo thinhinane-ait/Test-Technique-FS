@@ -1,12 +1,9 @@
 #app/repositories/invention.py
 from sqlalchemy.orm import Session
 from app.models.intervention import Intervention
-from app.models.antenna import AntennaStatus
 from app.schemas.intervention import InterventionCreate
 from app.repositories.antenna import AntennaRepository
 from sqlalchemy import select
-from datetime import datetime
-from fastapi import HTTPException
 from sqlalchemy import func
 
 class InterventionRepository():
@@ -50,11 +47,11 @@ class InterventionRepository():
                 db.add(db_intervention)
                 return db_intervention
     
-    def get_active_intervention_by_antenne_id(
+    def get_active_intervention_by_antenna_id(
                 self,
                 db:Session,
                 antenna_id: int
-    )-> Intervention: 
+    )-> Intervention | None: 
           statement = select(Intervention).where(
                 Intervention.antenna_id == antenna_id,
                 Intervention.ended_at.is_(None)
@@ -66,7 +63,7 @@ class InterventionRepository():
               db: Session,
               intervention_id: int
 
-    )-> Intervention: 
+    )-> Intervention | None: 
         statement = select(Intervention).where(
                 Intervention.id == intervention_id,
           )
@@ -74,13 +71,9 @@ class InterventionRepository():
     
     def close_intervention(
                 self,
-                db: Session,
                 intervention: Intervention
     )-> Intervention :
-        
-        
         intervention.ended_at = func.now()
-
         return intervention
 
         

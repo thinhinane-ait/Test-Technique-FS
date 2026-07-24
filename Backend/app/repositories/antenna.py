@@ -8,7 +8,7 @@ class AntennaRepository():
     def __init__(self):
         pass
     ### get list antennas
-    def get_antenna(
+    def get_antennas(
             self,
             db: Session,
             *,
@@ -27,7 +27,7 @@ class AntennaRepository():
         
         if status is not None:
             statement = statement.where(
-                Antenna.status.ilike(status)
+                Antenna.status == status
                 )
         
         statement = (
